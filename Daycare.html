@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tiny Tales – Daycare Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap">
+<style>
+:root{--bg:#f5f3ff;--card:#fff;--ink:#24264a;--mut:#5d5f86;--line:#e3dfff;--tint:#ece8ff;--acc:#ff6b57;--accink:#24264a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16172e;--card:#22244a;--ink:#f5f3ff;--mut:#b4b2d6;--line:#363968;--tint:#2d2f5c}}
+:root[data-theme="dark"]{--bg:#16172e;--card:#22244a;--ink:#f5f3ff;--mut:#b4b2d6;--line:#363968;--tint:#2d2f5c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Nunito,Arial,sans-serif}
+main{max-width:520px;margin:0 auto;padding:20px 16px 96px}
+h1,h2,h3{font-family:Fredoka,Nunito,Arial,sans-serif;font-weight:600;margin:0}
+h1{font-size:30px}h2{font-size:28px}h3{font-size:20px;margin-bottom:10px}
+button,input{font:inherit;color:var(--ink);border:0;min-height:44px;cursor:pointer}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.seg{display:flex;background:var(--tint);border-radius:999px;padding:4px}
+.seg button{background:none;border-radius:999px;padding:6px 16px;font-weight:700}
+[aria-pressed=true]{background:var(--ink)!important;color:var(--bg)!important}
+.kids{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.kids button{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:999px;padding:4px 16px 4px 4px;font-weight:700;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#24264a;font:600 18px Fredoka,sans-serif}
+.card{background:var(--card);border-radius:28px;padding:20px;margin:16px 0}
+.bar{width:100%;border-radius:20px;background:var(--acc);color:var(--accink);font:600 20px Fredoka,sans-serif;overflow-wrap:anywhere}
+.grp{margin:14px 0 0}.grp b{display:block;margin-bottom:6px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{background:var(--tint);border-radius:14px;padding:8px 16px;font-weight:700}
+.chips button:active{transform:scale(.96)}
+form{display:flex;gap:8px;margin-top:16px}
+input{flex:1;min-width:0;background:var(--tint);border-radius:14px;padding:8px 14px}
+input::placeholder{color:var(--mut)}
+form button{background:var(--ink);color:var(--bg);border-radius:14px;padding:8px 18px;font-weight:700}
+.pill{display:inline-block;margin-top:6px;border-radius:999px;padding:2px 14px;font-weight:700;background:var(--tint)}
+.pill.on{background:#3cc9a8;color:#24264a}
+.letter{font-size:18px;margin:0 0 14px;color:var(--ink);overflow-wrap:anywhere}h2{overflow-wrap:anywhere}
+.rm{max-width:100%;overflow-wrap:anywhere;background:var(--tint);border-radius:14px;padding:8px 18px;font-weight:700;margin-top:12px}.rm:disabled{opacity:.55;cursor:default}.hd{display:flex;justify-content:space-between;align-items:center;gap:8px}.hd .rm{margin-top:0}
+#go{background:var(--acc);color:var(--accink);border-radius:16px;padding:8px 20px;font-weight:800}
+ol{list-style:none;margin:0;padding:0}
+li{display:grid;grid-template-columns:64px 36px 1fr;gap:10px;align-items:center;padding:8px 0;overflow-wrap:anywhere}
+li time{color:var(--mut);font-size:14px;white-space:nowrap}li .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center}
+li.empty{display:block;color:var(--mut)}
+#reset{background:none;color:var(--mut);text-decoration:underline;display:block;margin:8px auto}
+#toast{position:fixed;left:50%;max-width:calc(100% - 32px);overflow-wrap:anywhere;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:16px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:8px;animation:up .2s}
+#toast[hidden]{display:none}#toast button{background:var(--bg);color:var(--ink);border-radius:12px;padding:4px 14px;font-weight:800}
+@keyframes up{from{opacity:0;transform:translate(-50%,12px)}}
+@media (prefers-reduced-motion:reduce){#toast{animation:none}.chips button:active{transform:none}}
+</style></head><body><main>
+<header><h1>🧸 Tiny Tales</h1><div class="seg" role="group" aria-label="Choose view"><button id="rt">Teacher</button><button id="rp">Parent</button></div></header>
+<div id="kids" class="kids" role="group" aria-label="Choose child"></div>
+
+<section id="teacher" class="card"><div class="hd"><h3>Log the day</h3><button id="undo" class="rm">Undo last</button></div>
+<button id="att" class="bar"></button>
+<div id="opts"></div>
+<form id="f"><input id="note" maxlength="200" aria-label="Add a note" placeholder="Add a short note"><button>Add note</button></form>
+</section>
+
+<section id="parent" class="card"><h2 id="pn"></h2><span id="st" class="pill"></span> <span id="live" class="pill" hidden>Live</span>
+<h3 style="margin-top:20px">Today’s update</h3>
+<p id="rep" class="letter" aria-live="polite">Tap the button for a short summary of the day.</p>
+<button id="go">Write today’s update</button>
+</section>
+
+<section id="manage" class="card"><h3>Children</h3><form id="kf"><input id="kn" maxlength="30" aria-label="Child name" placeholder="New child’s name"><button>Add child</button></form><button id="rm" class="rm"></button></section>
+<section class="card"><h3>Timeline</h3><ol id="tl" aria-live="polite"></ol></section>
+<button id="reset">Reset demo</button>
+<div id="toast" role="status" hidden></div>
+</main>
+<script>
+const COL=["#ffc83d","#3cc9a8","#ff9d8f","#a99cff"],KEY="tinylog.v1";
+const OPTS={Meal:["Ate well","Ate a little","Skipped"],Nap:["30 min","1 hour","2 hours"],Mood:["Happy","Fussy","Sleepy"],Toilet:["Diaper changed","Potty"]};
+const CAT={Meal:["🍽️","#ffc83d"],Nap:["😴","#a99cff"],Mood:["😊","#ff9d8f"],Toilet:["🚼","#3cc9a8"],Attendance:["📍","#c7c3ee"],Note:["📝","#c7c3ee"]};
+const D=()=>({role:"teacher",kid:"0",kids:[{id:"0",n:"Aarav"},{id:"1",n:"Meera"},{id:"2",n:"Kabir"}],log:{},in:{}});
+let S=D();
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+if(!S.kids.length)S.kids=D().kids;
+S.kid=String(S.kid);if(!S.kids.some(k=>k.id===S.kid))S.kid=S.kids[0].id;
+const td=new Date().toDateString();if(S.day!==td){S.log={};S.in={};S.day=td} // ponytail: new day clears the log; keep history in db later
+// ponytail: localStorage = one device; swap for the db capability to sync teacher and parent phones
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let DB; // set once the shared database is available
+function commit(){ // save locally, then share with other viewers (only the owner or editors can write)
+  save();if(!DB)return;
+  DB.doc("state/main").set({kids:S.kids,log:S.log,in:S.in,day:S.day}).catch(()=>toast("Saved on this device only. Open the link as the teacher to share updates.",null));
+}
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+const now=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+const es=()=>S.log[S.kid]||(S.log[S.kid]=[]);
+const nm=()=>S.kids.find(k=>k.id===S.kid).n;
+function toast(msg,kid=S.kid){ // kid=null: message only, no Undo
+  const t=$("toast"),u=el("button","","Undo");t.textContent=msg;
+  u.onclick=()=>{const L=S.log[kid]||[],e=L.pop();if(e&&e.k==="Attendance")S.in[kid]=!S.in[kid];commit();render();if(e&&L.length)toast("Undid "+e.k.toLowerCase()+": "+e.v,kid);else t.hidden=true};
+  if(kid!==null)t.append(u);t.hidden=false;clearTimeout(toast.id);toast.id=setTimeout(()=>t.hidden=true,4000);
+}
+const add=(k,v)=>{v=String(v).trim().slice(0,200);if(!v)return;es().push({t:now(),k,v});commit();render();toast("Logged "+k.toLowerCase()+": "+v)};
+function fallbackReport(n,list){
+  if(!list.length)return "No updates for "+n+" yet today.";
+  return n+"’s day so far: "+list.map(e=>e.k.toLowerCase()+" – "+e.v.toLowerCase()).join(", ")+".";
+}
+console.assert(fallbackReport("A",[{k:"Nap",v:"1 hour"}])==="A’s day so far: nap – 1 hour.","fallbackReport");
+
+for(const k in OPTS){const g=el("div","grp"),c=el("div","chips");g.append(el("b","",CAT[k][0]+" "+k),c);
+  OPTS[k].forEach(v=>{const b=el("button","",v);b.type="button";b.onclick=()=>add(k,v);c.append(b)});$("opts").append(g)}
+$("rt").onclick=()=>{S.role="teacher";save();render()};
+$("rp").onclick=()=>{S.role="parent";save();render()};
+$("att").onclick=()=>{S.in[S.kid]=!S.in[S.kid];add("Attendance",S.in[S.kid]?"Checked in":"Checked out")};
+$("f").onsubmit=e=>{e.preventDefault();add("Note",$("note").value);$("note").value=""};
+$("reset").onclick=()=>{S={...D(),role:S.role,day:td};commit();render()};
+$("undo").onclick=()=>{const e=es().pop();if(!e)return;if(e.k==="Attendance")S.in[S.kid]=!S.in[S.kid];commit();render();toast("Undid "+e.k.toLowerCase()+": "+e.v,null)};
+$("kf").onsubmit=e=>{e.preventDefault();const n=$("kn").value.trim().slice(0,30);if(!n)return;if(S.kids.some(k=>k.n.toLowerCase()===n.toLowerCase()))return toast(n+" is already added",null);const id="k"+Date.now();S.kids.push({id,n});S.kid=id;$("kn").value="";commit();render();toast("Added "+n,null)};
+let rmT;$("rm").onclick=()=>{const b=$("rm");if(S.kids.length<2)return;
+  if(!b.dataset.sure){b.dataset.sure=1;render();clearTimeout(rmT);rmT=setTimeout(()=>{delete b.dataset.sure;render()},3000);return}
+  const n=nm();S.kids=S.kids.filter(k=>k.id!==S.kid);delete S.log[S.kid];delete S.in[S.kid];S.kid=S.kids[0].id;delete b.dataset.sure;commit();render();toast("Removed "+n,null)};
+$("go").onclick=async()=>{
+  const n=nm(),list=es(),out=$("rep");out.textContent="Writing…";let t;
+  try{
+    if(!list.length)throw 0;
+    const s=await claude.use("sample");if(!s)throw 0; // ponytail: template fallback when AI is unavailable
+    t=(await s("Write a warm 2-3 sentence daily update for a parent about "+n+"’s day at daycare. Use only these facts and invent nothing: "+JSON.stringify(list)+". Reply with plain text only.",{modelTier:"quick"})).text;
+  }catch(e){t=fallbackReport(n,list)}
+  out.textContent=t;
+};
+function render(){
+  const T=S.role==="teacher";
+  const K=$("kids");K.textContent="";
+  S.kids.forEach((k,i)=>{const b=el("button"),a=el("span","av",k.n[0].toUpperCase());a.style.background=COL[i%COL.length];b.append(a,k.n);b.setAttribute("aria-pressed",k.id===S.kid);b.onclick=()=>{S.kid=k.id;$("rep").textContent="Tap the button for a short summary of the day.";save();render()};K.append(b)});
+  $("rt").setAttribute("aria-pressed",T);$("rp").setAttribute("aria-pressed",!T);
+  $("teacher").hidden=!T;$("manage").hidden=!T;$("parent").hidden=T;
+  $("pn").textContent=nm();
+  $("att").textContent=(S.in[S.kid]?"Check out ":"Check in ")+nm();
+  $("rm").textContent=($("rm").dataset.sure?"Tap again to remove ":"Remove ")+nm();$("rm").disabled=S.kids.length<2;$("undo").disabled=!es().length;
+  $("st").textContent=S.in[S.kid]?"At daycare":"Not at daycare";$("st").className="pill"+(S.in[S.kid]?" on":"");
+  const tl=$("tl"),list=es();tl.textContent="";
+  if(!list.length)tl.append(el("li","empty",T?"Nothing logged yet. Tap a meal, nap or mood above.":"No updates yet. Check back soon."));
+  [...list].reverse().forEach(e=>{const li=el("li"),ic=el("span","ic",CAT[e.k][0]),d=el("div","",e.v);
+    ic.style.background=CAT[e.k][1];d.prepend(el("b","",e.k+": "));li.append(el("time","",e.t),ic,d);tl.append(li)});
+}
+render();
+(async()=>{try{
+  DB=await claude.use("db");if(!DB)return;$("live").hidden=false;
+  DB.doc("state/main").onSnapshot(s=>{
+    const d=s.exists&&JSON.parse(JSON.stringify(s.data()));
+    if(!d||d.day!==td||!Array.isArray(d.kids)||!d.kids.length)return;
+    S.kids=d.kids;S.log=d.log||{};S.in=d.in||{};
+    if(!S.kids.some(k=>k.id===S.kid))S.kid=S.kids[0].id;
+    save();render();
+  },()=>{}); // ponytail: last write wins; add per-entry docs if two teachers log at once
+}catch(e){}})();
+</script></body></html>
